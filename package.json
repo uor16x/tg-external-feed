@@ -1,0 +1,24 @@
+{
+  "name": "tg-external-feed",
+  "version": "1.0.0",
+  "description": "Telegram bot with ability to read external feed sources",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uor16x/tg-external-feed.git"
+  },
+  "author": "uor16x",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uor16x/tg-external-feed/issues"
+  },
+  "homepage": "https://github.com/uor16x/tg-external-feed#readme",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "node-telegram-bot-api": "^0.56.0",
+    "node-telegram-keyboard-wrapper": "^3.0.0"
+  }
+}
