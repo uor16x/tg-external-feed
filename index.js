@@ -1,2 +1,3 @@
 require('dotenv').config()
-const bot = require('./bot')({ db: {}, vk: {} })
+const src = require('./src')
+const bot = src.initBot({ db: {}, vk: {} })
