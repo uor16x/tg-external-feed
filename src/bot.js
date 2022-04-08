@@ -50,12 +50,10 @@ const _methods = {
         )
         const groupData = vk.getGroupData(url)
         db.addSource(id, groupData)
-        setTimeout(() => {
-            bot.editMessageText(`Processing done.\n${groupData.name} saved.`, {
-                chat_id: id,
-                message_id: progressMsg.message_id
-            })
-        }, 4000)
+        bot.editMessageText(`Processing done.\n${groupData.name} saved.`, {
+            chat_id: id,
+            message_id: progressMsg.message_id
+        })
     },
     deleteSource: db => vk => bot => async ({ data, query }) => {
         const id = query.from.id
