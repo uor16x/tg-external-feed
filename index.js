@@ -5,6 +5,7 @@ try {
         db: src.db(),
         vk: {
             getGroupData(url) {
+                // TODO: add vk
                 return {
                     name: 'Котокрошка',
                     id: '123',

@@ -5,8 +5,6 @@ const _methods = {
     start: db => vk => bot => async msg => {
         const id = msg.chat.id
         db.getOrCreateUser(id)
-        db.addSource(id, { url: 'abc', name: 'qwe', id: 'zxc3' })
-        db.addSource(id, { url: 'abc2', name: 'qwe2', id: 'zxc4' })
         await bot.sendMessage(
             id,
             `Welcome, ${msg.chat.first_name}!`,
