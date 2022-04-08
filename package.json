@@ -7,6 +7,9 @@
     "start": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "nodemonConfig": {
+    "ignore": ["db.json"]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/uor16x/tg-external-feed.git"
@@ -19,6 +22,7 @@
   "homepage": "https://github.com/uor16x/tg-external-feed#readme",
   "dependencies": {
     "dotenv": "^10.0.0",
+    "node-json-db": "^1.5.0",
     "node-telegram-bot-api": "^0.56.0",
     "node-telegram-keyboard-wrapper": "^3.0.0"
   },
