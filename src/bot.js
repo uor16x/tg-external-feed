@@ -1,6 +1,7 @@
 const keyboard = require('./keyboard')
 const vkRegex = /(https?:\/\/(.+?\.)?vk\.com(\/[A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)/
 
+let groups
 const utils = {
     getSourcesReplyMarkup(sources) {
         return sources.length
@@ -46,6 +47,12 @@ const _methods = {
                 reply_to_message_id: msg.message_id
             }
         )
+    },
+    update: db => vk => bot => async msg => {
+        const id = msg.chat.id
+
+        const sources = db.getSourcesByUserId(id)
+        await groups.formFeed(sources)
     },
     addSource: db => vk => bot => async msg => {
         const id = msg.chat.id
@@ -112,6 +119,9 @@ module.exports = function({ db, vk }) {
         configureBot(_bot, methods)
         bot =_bot
     }
+    if (!groups) {
+        groups = require('./groups')(vk)
+    }
     return bot
 }
 
@@ -125,6 +135,7 @@ function getConfiguredMethods(db, vk, bot, methods) {
 function configureBot(bot, methods) {
     bot.onText(/\/start/, methods.start)
     bot.onText(/Sources/, methods.sources)
+    bot.onText(/Update/, methods.update)
     bot.onText(vkRegex, methods.addSource)
 
     bot.on('callback_query', async query => {

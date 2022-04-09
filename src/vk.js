@@ -44,6 +44,9 @@ const methods = {
             url: group.screen_name,
             name: group.name
         }
+    },
+    async execute(code) {
+        return vk.api.execute({ code })
     }
 }
 
