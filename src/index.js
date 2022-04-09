@@ -1,4 +1,5 @@
 module.exports = {
     initBot: require('./bot'),
-    db: require('./db')
+    db: require('./db'),
+    vk: require('./vk')
 }

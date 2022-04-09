@@ -5,6 +5,7 @@ const _methods = {
     start: db => vk => bot => async msg => {
         const id = msg.chat.id
         db.getOrCreateUser(id)
+        await vk.run()
         await bot.sendMessage(
             id,
             `Welcome, ${msg.chat.first_name}!`,

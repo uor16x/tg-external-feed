@@ -3,16 +3,17 @@ const src = require('./src')
 try {
     src.initBot({ 
         db: src.db(),
-        vk: {
-            getGroupData(url) {
-                // TODO: add vk
-                return {
-                    name: 'Котокрошка',
-                    id: '123',
-                    url,
-                }
-            }
-        }
+        vk: src.vk()
+        // vk: {
+        //     getGroupData(url) {
+        //         // TODO: add vk
+        //         return {
+        //             name: 'Котокрошка',
+        //             id: '123',
+        //             url,
+        //         }
+        //     }
+        // }
     })
 } catch (err) {
     console.error(err)
