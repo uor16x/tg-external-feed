@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/uor16x/tg-external-feed#readme",
   "dependencies": {
+    "dayjs": "^1.11.0",
     "dotenv": "^10.0.0",
     "node-json-db": "^1.5.0",
     "node-telegram-bot-api": "^0.56.0",

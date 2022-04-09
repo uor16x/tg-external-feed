@@ -1,4 +1,5 @@
 const keyboard = require('./keyboard')
+const dayjs = require('dayjs')
 const vkRegex = /(https?:\/\/(.+?\.)?vk\.com(\/[A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)/
 
 let groups
@@ -20,6 +21,22 @@ const utils = {
             `Your sources list is empty.
             \nSend me a link to a vk group to continue.  
             `
+    },
+    formatPost(post) {
+        return `[${post.name}]\n`
+            + `${this.dateFormatter(post.date)}\n`
+            + `\n${post.text}\n`
+    },
+    dateFormatter(vkDate) {
+        const date = dayjs(vkDate * 1000)
+        const today = dayjs()
+        if (today.isSame(date, 'day')) {
+            return date.format('@ HH:mm')
+        }
+        if (today.isSame(date, 'year')) {
+            return date.format('D MMM @ HH:mm')
+        }
+        return date.format('D MMM YYYY @ HH:mm')
     }
 }
 
@@ -51,8 +68,17 @@ const _methods = {
     update: db => vk => bot => async msg => {
         const id = msg.chat.id
 
+        const feedMsg = await bot.sendMessage(
+            id,
+            'Preparing your feed...'
+        )
         const sources = db.getSourcesByUserId(id)
-        await groups.formFeed(sources)
+        const post = await groups.formFeed(id, sources)
+        const feedText = utils.formatPost(post)
+        bot.editMessageText(feedText, {
+            chat_id: id,
+            message_id: feedMsg.message_id
+        })
     },
     addSource: db => vk => bot => async msg => {
         const id = msg.chat.id

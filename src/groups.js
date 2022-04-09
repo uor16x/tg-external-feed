@@ -28,7 +28,7 @@ const utils = {
             `)
             .map(request => vk.execute(request))    
     },
-    mergeExecuteResponses(executeResponses) {
+    mergeExecuteResponses(executeResponses, sources) {
         return executeResponses.reduce((acc, responseItem) => {
             if (responseItem.errors) {
                 console.error(responseItem.errors)
@@ -36,7 +36,12 @@ const utils = {
             const posts = Object
                 .keys(responseItem.response)
                 .reduce((postsAcc, key) => {
-                    postsAcc[key] = responseItem.response[key].items
+                    const dbSource = sources.find(source => source.url === key)
+                    const name = dbSource && dbSource.name || key
+                    postsAcc[key] = {
+                        ...responseItem.response[key],
+                        name
+                    }
                     return postsAcc
                 }, {})
             return {
@@ -45,17 +50,40 @@ const utils = {
             }
         }, {})
     },
-    async getLastPostRequestArray(sources) {
+    async getWalls(sources) {
         try {
             const executeSourceQueries = this.formatSourcesExecuteQuery(sources)
             const executeSourceRequests = this.prepateExecuteRequests(executeSourceQueries)
             const executeResponse = await Promise.all(executeSourceRequests)
-            result = mergeExecuteResponses(executeResponse)
+            result = this.mergeExecuteResponses(executeResponse, sources)
         } catch (err) {
             console.error(err)
             throw new Error('Failed to prepare the feed, please try again later')
         }
-        console.log(result)
+        return result
+    },
+    calculateGroupsRefillData(walls) {
+        // TODO: refill logic
+        return Object.keys(walls).map(group => {
+            
+        }, {})
+    },
+    formatListFromWalls(walls) {
+        return Object.keys(walls).reduce((acc, groupKey) => {
+            const currGroupPosts = walls[groupKey].items
+            acc.push(...currGroupPosts.map(post => ({
+                src: groupKey,
+                name: walls[groupKey].name,
+                id: post.id,
+                pinned: post.is_pinned,
+                atts: post.attachments,
+                text: post.text,
+                date: post.date
+            })))
+            return acc
+        }, [])
+        .filter(post => !post.pinned)
+        .sort((postA, postB) => postB.date - postA.date)
     },
     spliceIntoChunks(arr, chunkSize) {
         const result = [];
@@ -67,8 +95,11 @@ const utils = {
     }
 }
 const methods = {
-    async formFeed(sources) {
-        await utils.getLastPostRequestArray(sources)
+    async formFeed(id, sources) {
+        const walls = await utils.getWalls(sources)
+        const list = utils.formatListFromWalls(walls)
+        return this.setFeed(id, list)
+        // TODO: call refill
     },
     setFeed(id, list) {
         feed[id] = {
@@ -76,6 +107,7 @@ const methods = {
             seen: [],
             index: 0
         }
+        return list[0]
     },
     next(id) {
         const currFeed = feed[id]
