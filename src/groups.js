@@ -1,32 +1,60 @@
 const posts = {}
 const feed = {}
-const groupsPerExecute = 20
+const GROUPS_PER_EXECUTE = 20
+const DEFAULT_POSTS_COUNT = 3
 
 let vk
 
 const utils = {
-    async getLastPostRequestArray(sources) {
-        const requestTemplate = `
-            var groups = {};
-        `
-        const requestTextsArray = sources.map((source, index) => {
-            return `"${sources[index].url}": API.wall.get({ "domain": "${sources[index].url}","count": 1, "owner_id": -${sources[index].id} })`
+    formatSourcesExecuteQuery(sources) {
+        return sources.map((source, index) => {
+            return `"${sources[index].url}":
+                API.wall.get({
+                    "domain": "${sources[index].url}",
+                    "count": ${sources._count || DEFAULT_POSTS_COUNT},
+                    "offset": ${sources._offset || 0},
+                    "owner_id": -${sources[index].id}
+                })`
         })
-        const requests = this
-            .spliceIntoChunks(requestTextsArray, groupsPerExecute)
+    },
+    prepateExecuteRequests(formattedSourcesQuery) {
+        return this
+            .spliceIntoChunks(formattedSourcesQuery, GROUPS_PER_EXECUTE)
             .map(requestsPack => `
                 var groups = {
                     ${requestsPack}
                 };
                 return groups;
             `)
-            .map(request => vk.execute(request))
-        const result = await Promise
-            .all(requests)
-            .catch(err => {
-                console.error(err)
-            })
-
+            .map(request => vk.execute(request))    
+    },
+    mergeExecuteResponses(executeResponses) {
+        return executeResponses.reduce((acc, responseItem) => {
+            if (responseItem.errors) {
+                console.error(responseItem.errors)
+            }
+            const posts = Object
+                .keys(responseItem.response)
+                .reduce((postsAcc, key) => {
+                    postsAcc[key] = responseItem.response[key].items
+                    return postsAcc
+                }, {})
+            return {
+                ...acc,
+                ...posts
+            }
+        }, {})
+    },
+    async getLastPostRequestArray(sources) {
+        try {
+            const executeSourceQueries = this.formatSourcesExecuteQuery(sources)
+            const executeSourceRequests = this.prepateExecuteRequests(executeSourceQueries)
+            const executeResponse = await Promise.all(executeSourceRequests)
+            result = mergeExecuteResponses(executeResponse)
+        } catch (err) {
+            console.error(err)
+            throw new Error('Failed to prepare the feed, please try again later')
+        }
         console.log(result)
     },
     spliceIntoChunks(arr, chunkSize) {
@@ -45,12 +73,14 @@ const methods = {
     setFeed(id, list) {
         feed[id] = {
             list,
+            seen: [],
             index: 0
         }
     },
     next(id) {
+        const currFeed = feed[id]
+        currFeed.seen.push(currFeed.list[currFeed.index])
         feed[id].index++
-        // TODO: check if download needed
         return feed[id]
     }
 }
