@@ -1,11 +1,31 @@
 const keyboard = require('./keyboard')
 const vkRegex = /(https?:\/\/(.+?\.)?vk\.com(\/[A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)/
 
+const utils = {
+    getSourcesReplyMarkup(sources) {
+        return sources.length
+            ? keyboard
+                .sources(sources)
+                .getMarkup({ resize_keyboard: true })
+            : undefined
+    },
+    getSourcesText(sources) {
+        return sources.length
+            ? 
+            `Here is your sources list, ${msg.chat.first_name}!
+            \nPress on the option to delete it.
+            `
+            :
+            `Your sources list is empty.
+            \nSend me a link to a vk group to continue.  
+            `
+    }
+}
+
 const _methods = {
     start: db => vk => bot => async msg => {
         const id = msg.chat.id
         db.getOrCreateUser(id)
-        await vk.run()
         await bot.sendMessage(
             id,
             `Welcome, ${msg.chat.first_name}!`,
@@ -49,8 +69,23 @@ const _methods = {
             `Processing...`,
             { reply_to_message_id: msg_id }
         )
-        const groupData = vk.getGroupData(url)
-        db.addSource(id, groupData)
+        let groupData = null
+        try {
+            groupData = await vk.getGroupData(url)
+        } catch (groupDataReceiveErr) {
+            return bot.editMessageText(`Failed to process the group: ${groupDataReceiveErr.message}`, {
+                chat_id: id,
+                message_id: progressMsg.message_id
+            })
+        }
+        try {
+            db.addSource(id, groupData)
+        } catch (saveSourceErr) {
+            return bot.editMessageText(`Failed to save the source: ${saveSourceErr.message}`, {
+                chat_id: id,
+                message_id: progressMsg.message_id
+            })
+        }
         bot.editMessageText(`Processing done.\n${groupData.name} saved.`, {
             chat_id: id,
             message_id: progressMsg.message_id
@@ -61,8 +96,22 @@ const _methods = {
         try {
             const name = db.deleteSource(id, data)
             // TODO: delete from inline keyboard
+            const sources = db.getSourcesByUserId(id)
+            const replyMarkup = utils.getSourcesReplyMarkup(sources)
+            if (!replyMarkup) {
+                const text = utils.getSourcesText(sources)
+                return bot.editMessageText(text, {
+                    chat_id: id,
+                    message_id: query.message.message_id
+                })
+            }
+            await bot.editMessageReplyMarkup(replyMarkup, {
+                chat_id: id,
+                message_id: query.message.message_id
+            })
             await bot.sendMessage(id, `${name} deleted.`)
         } catch (err) {
+            console.error(`Failed to delete the group: ${err}`)
             await bot.sendMessage(id, `Failed to delete the group.`)
         }
     }

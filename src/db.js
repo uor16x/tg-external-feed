@@ -1,11 +1,6 @@
 const { JsonDB } = require('node-json-db');
 
 let db = null
-function checkDB() {
-    if (!db) {
-        throw new Error('DB has to be initialized first')
-    }
-}
 
 const methods = {
     getUserById(id) {
@@ -18,7 +13,6 @@ const methods = {
         return user
     },
     getOrCreateUser(id) {
-        checkDB()
         let user = this.getUserById(id)
         if (!user) {
             user = {
@@ -31,7 +25,6 @@ const methods = {
         return user
     },
     addSource(id, data) {
-        checkDB()
         try {
             const sources = this.getSourcesByUserId(id)
             const currSrc = sources.find(item => item.id === data.id)
@@ -44,7 +37,6 @@ const methods = {
         }
     },
     deleteSource(id, srcId) {
-        checkDB()
         let name = null
         try {
             const sources = this.getSourcesByUserId(id)
@@ -61,7 +53,6 @@ const methods = {
         return name
     },
     getSourcesByUserId(id) {
-        checkDB()
         let result = []
         try {
             result = db.getData(`/user/${id}/sources`)
@@ -76,5 +67,6 @@ module.exports = () => {
     if (!db) {
         db = new JsonDB("db", true, true, '/')
      }
+     // TODO: add err handling
      return methods
 }
