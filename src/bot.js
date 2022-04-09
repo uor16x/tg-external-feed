@@ -9,10 +9,10 @@ const utils = {
                 .getMarkup({ resize_keyboard: true })
             : undefined
     },
-    getSourcesText(sources) {
+    getSourcesText(sources, firstName) {
         return sources.length
             ? 
-            `Here is your sources list, ${msg.chat.first_name}!
+            `Here is your sources list, ${firstName}!
             \nPress on the option to delete it.
             `
             :
@@ -36,20 +36,8 @@ const _methods = {
         const id = msg.chat.id
 
         const sources = db.getSourcesByUserId(id)
-        const answerText = sources.length
-            ? 
-            `Here is your sources list, ${msg.chat.first_name}!
-            \nPress on the option to delete it.
-            `
-            :
-            `Your sources list is empty.
-            \nSend me a link to a vk group to continue.  
-            `
-        const answerKeyboard = sources.length
-            ? keyboard
-                .sources(sources)
-                .getMarkup({ resize_keyboard: true })
-            : undefined
+        const answerText = utils.getSourcesText(sources, msg.chat.first_name)
+        const answerKeyboard = utils.getSourcesReplyMarkup(sources)
         await bot.sendMessage(
             id,
             answerText,
@@ -95,11 +83,10 @@ const _methods = {
         const id = query.from.id
         try {
             const name = db.deleteSource(id, data)
-            // TODO: delete from inline keyboard
             const sources = db.getSourcesByUserId(id)
             const replyMarkup = utils.getSourcesReplyMarkup(sources)
             if (!replyMarkup) {
-                const text = utils.getSourcesText(sources)
+                const text = utils.getSourcesText(sources, query.message.chat.first_name)
                 return bot.editMessageText(text, {
                     chat_id: id,
                     message_id: query.message.message_id
