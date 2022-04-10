@@ -29,6 +29,10 @@ const utils = {
         // TODO: parse atts
         return `${att.type}\n`
     },
+    getPostPhotos(post) {
+        return post.atts
+            .filter(att => att.type === 'photo')
+    },
     formatPost(post) {
         const atts = post.atts
             ? `\n${post.atts.reduce((acc, att) => {
@@ -90,18 +94,57 @@ const _methods = {
         const post = await groups.formFeed(id, sources)
         const feedText = utils.formatPost(post)
 
-        // TODO: refactor to separated method
-        if (post.atts) {
-            console.log(post.atts)
-        }
+        await bot.sendMediaGroup(
+            id,
+            [{
+                caption: feedText,
+                type: 'photo',
+                media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
+            }, {
+                type: 'photo',
+                media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
+            }, {
+                type: 'photo',
+                media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
+            }]
+        )
+        await bot.sendMessage(
+            id,
+            '>>>>>>>',
+            {
+                reply_markup: keyboard
+                    .next
+                    .getMarkup({ resize_keyboard: false })
+            }
+        )
 
-        bot.editMessageText(feedText, {
-            chat_id: id,
-            message_id: feedMsg.message_id,
-            reply_markup: keyboard
-                .next
-                .getMarkup({ resize_keyboard: true })
-        })
+        // TODO: refactor to separated method
+        // if (post.atts) {
+        //     const photos = utils.getPostPhotos(post)
+        //     if (photos.length) {
+        //         await bot.sendMediaGroup(
+        //             id,
+        //             [{
+        //                 type: 'photo',
+        //                 media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
+        //             }, {
+        //                 type: 'photo',
+        //                 media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
+        //             }, {
+        //                 type: 'photo',
+        //                 media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
+        //             }]
+        //         )
+        //     }
+        // }
+
+        // bot.editMessageText(feedText, {
+        //     chat_id: id,
+        //     message_id: feedMsg.message_id,
+        //     reply_markup: keyboard
+        //         .next
+        //         .getMarkup({ resize_keyboard: true })
+        // })
     },
     addSource: db => vk => bot => async msg => {
         const id = msg.chat.id
