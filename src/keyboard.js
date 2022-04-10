@@ -17,9 +17,18 @@ module.exports = {
         ...data.map(item => new Row(
             new InlineKeyboardButton(
                 item.name,
-                "callback_data",
+                'callback_data',
                 `deleteSource:${item.id}`
             ),
         ))
     ),
+    next: new InlineKeyboard(
+        new Row(
+            new InlineKeyboardButton(
+                'Next',
+                'callback_data',
+                'next:0'
+            )
+        )
+    )
 }

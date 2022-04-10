@@ -22,10 +22,24 @@ const utils = {
             \nSend me a link to a vk group to continue.  
             `
     },
+    attachmentFormatter(att) {
+        if (att.type === 'photo') {
+            return ''
+        }
+        // TODO: parse atts
+        return `${att.type}\n`
+    },
     formatPost(post) {
+        const atts = post.atts
+            ? `\n${post.atts.reduce((acc, att) => {
+                acc += this.attachmentFormatter(att)
+                return acc
+            }, '')}`
+            : ''
         return `[${post.name}]\n`
             + `${this.dateFormatter(post.date)}\n`
             + `\n${post.text}\n`
+            + atts
     },
     dateFormatter(vkDate) {
         const date = dayjs(vkDate * 1000)
@@ -75,9 +89,18 @@ const _methods = {
         const sources = db.getSourcesByUserId(id)
         const post = await groups.formFeed(id, sources)
         const feedText = utils.formatPost(post)
+
+        // TODO: refactor to separated method
+        if (post.atts) {
+            console.log(post.atts)
+        }
+
         bot.editMessageText(feedText, {
             chat_id: id,
-            message_id: feedMsg.message_id
+            message_id: feedMsg.message_id,
+            reply_markup: keyboard
+                .next
+                .getMarkup({ resize_keyboard: true })
         })
     },
     addSource: db => vk => bot => async msg => {
