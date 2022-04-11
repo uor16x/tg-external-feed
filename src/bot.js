@@ -15,7 +15,7 @@ const utils = {
         return sources.length
             ? 
             `Here is your sources list, ${firstName}!
-            \nPress on the option to delete it.
+            \nPress on the option to view posts.
             `
             :
             `Your sources list is empty.
@@ -44,6 +44,7 @@ const utils = {
             + `${this.dateFormatter(post.date)}\n`
             + `\n${post.text}\n`
             + atts
+            + '\n/next'
     },
     dateFormatter(vkDate) {
         const date = dayjs(vkDate * 1000)
@@ -62,10 +63,11 @@ const _methods = {
     start: db => vk => bot => async msg => {
         const id = msg.chat.id
         db.getOrCreateUser(id)
+        await (require('./queue')).run()
         await bot.sendMessage(
             id,
             `Welcome, ${msg.chat.first_name}!`,
-            { reply_markup: keyboard.start.getMarkup({ resize_keyboard: true }) }
+            // { reply_markup: keyboard.menu(null).getMarkup({ resize_keyboard: true }) }
         )
     },
     sources: db => vk => bot => async msg => {
@@ -110,11 +112,11 @@ const _methods = {
         )
         await bot.sendMessage(
             id,
-            '>>>>>>>',
+            '➤➤➤',
             {
                 reply_markup: keyboard
                     .next
-                    .getMarkup({ resize_keyboard: false })
+                    .getMarkup({ resize_keyboard: true })
             }
         )
 
@@ -178,6 +180,9 @@ const _methods = {
             message_id: progressMsg.message_id
         })
     },
+    q: db => vk => bot => async msg => {
+        await bot.deleteMessage(msg.chat.id, msg.message_id)
+    },
     deleteSource: db => vk => bot => async ({ data, query }) => {
         const id = query.from.id
         try {
@@ -229,6 +234,8 @@ function configureBot(bot, methods) {
     bot.onText(/Sources/, methods.sources)
     bot.onText(/Update/, methods.update)
     bot.onText(vkRegex, methods.addSource)
+    bot.onText(/\/next/, methods.q)
+
 
     bot.on('callback_query', async query => {
         const [ action, data ] = query.data.split(':')

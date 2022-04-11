@@ -7,12 +7,14 @@ const {
 } = require('node-telegram-keyboard-wrapper')
 
 module.exports = {
-    start: new ReplyKeyboard(
-        new Row(
-            new KeyboardButton('Sources'),
-            new KeyboardButton('Update')
+    menu: currentSrc => {
+        new ReplyKeyboard(
+            new Row( new KeyboardButton('Sources')),
+            currentSrc
+                ? new Row(new KeyboardButton(`${currentSrc.name} ➤➤`))
+                : null
         )
-    ),
+    },
     sources: data => new InlineKeyboard(
         ...data.map(item => new Row(
             new InlineKeyboardButton(

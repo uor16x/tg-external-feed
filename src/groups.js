@@ -3,6 +3,8 @@ const feed = {}
 const GROUPS_PER_EXECUTE = 20
 const DEFAULT_POSTS_COUNT = 3
 
+const state = {}
+
 let vk
 
 const utils = {
@@ -95,6 +97,16 @@ const utils = {
     }
 }
 const methods = {
+    async setSource(id, src) {
+        const wall = getWall(src)
+        state[id] = {
+            src,
+            wall,
+            index: 0,
+        }
+        return wall
+    },
+
     async formFeed(id, sources) {
         const walls = await utils.getWalls(sources)
         const list = utils.formatListFromWalls(walls)

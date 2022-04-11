@@ -45,6 +45,14 @@ const methods = {
             name: group.name
         }
     },
+    async getWall(src, offset) {
+        return vk.api.wall.get({
+            domain: src.url,
+            count: 10,
+            offset: offset || 0,
+            owner_id: `-${src.id}`
+        })
+    },
     async execute(code) {
         return vk.api.execute({ code })
     }
