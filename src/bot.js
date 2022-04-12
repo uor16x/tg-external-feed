@@ -66,7 +66,7 @@ const _methods = {
         await bot.sendMessage(
             id,
             `Welcome, ${msg.chat.first_name}!`,
-            // { reply_markup: keyboard.menu(null).getMarkup({ resize_keyboard: true }) }
+            { reply_markup: keyboard().getMarkup({ resize_keyboard: true }) }
         )
     },
     sources: db => vk => bot => async msg => {
@@ -183,7 +183,19 @@ const _methods = {
             message_id: progressMsg.message_id
         })
     },
-    deleteSource: db => vk => bot => async ({ data, query }) => {
+    deleteSourceHint: db => vk => bot => async msg => {
+        const id = msg.chat.id
+        const msg_id = msg.message_id
+        await bot.sendMessage(
+            id,
+            `To delete the group type its full name as the argument.
+            \nFor example: \n /del Group1
+            \nOr use /sources to edit the list directly using buttons.`,
+            { reply_to_message_id: msg_id }
+        )
+    },
+    deleteSource: db => vk => bot => async (msg, name) => {
+        console.log(msg)
         // TODO: remove user from sources arr
         // const id = query.from.id
         // try {
@@ -234,16 +246,18 @@ function configureBot(bot, methods) {
     bot.onText(/\/start/, methods.start)
     bot.onText(/Sources/, methods.sources)
     bot.onText(/Update/, methods.update)
+    bot.onText(/\/del (.+)/, methods.deleteSource)
+    bot.onText(/^\/del$/, methods.deleteSourceHint)
     bot.onText(vkRegex, methods.addSource)
 
 
-    bot.on('callback_query', async query => {
-        const [ action, data ] = query.data.split(':')
-        const callback = methods[action]
-        if (!callback) {
-            return console.error(`Cant find such callback: ${action}`)
-        }
-        bot.answerCallbackQuery(query.id, 'Processing...')
-        await callback({ query, data })
-    })
+    // bot.on('callback_query', async query => {
+    //     const [ action, data ] = query.data.split(':')
+    //     const callback = methods[action]
+    //     if (!callback) {
+    //         return console.error(`Cant find such callback: ${action}`)
+    //     }
+    //     bot.answerCallbackQuery(query.id, 'Processing...')
+    //     await callback({ query, data })
+    // })
 }
