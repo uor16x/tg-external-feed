@@ -1,3 +1,5 @@
+const feed = require('./feed')
+const Broadcaster = require('./Broadcaster')
 const keyboard = require('./keyboard')
 const dayjs = require('dayjs')
 const vkRegex = /(https?:\/\/(.+?\.)?vk\.com(\/[A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)/
@@ -198,6 +200,8 @@ module.exports = function({ db, vk }) {
         const methods = getConfiguredMethods(db, vk, _bot, _methods)
         configureBot(_bot, methods)
         bot =_bot
+
+        Broadcaster.broadcast(null, () => feed(bot, vk, db))
     }
     return bot
 }

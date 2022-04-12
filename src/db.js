@@ -63,13 +63,18 @@ const methods = {
             throw new Error('Failed to delete the source from DB')
         }
     },
-    getSourcesByUserId(id) {
+    getAllSourcesArr() {
         const sourcesData = db.getData('/source')
-        const currUserSources = Object.keys(sourcesData)
-            .filter(key => sourcesData[key].receivers.includes(id))
+        return Object.keys(sourcesData)
             .map(key => sourcesData[key])
-        return currUserSources
     },
+    getAllSourcesObj() {
+        return db.getData('/source')
+    },
+    getSourcesByUserId(id) {
+        return this.getAllSourcesArr()
+            .filter(item => item.receivers.includes(id))
+    }
 }
 
 module.exports = () => {

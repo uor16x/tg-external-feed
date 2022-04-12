@@ -1,8 +1,3 @@
-
-module.exports = {
-    run
-}
-
 class Broadcaster {
     static REQUESTS_PER_SECOND = 25 // 25 requests per second
     static RECEIVER_REQUEST_THROTTLE_MS = 3500 // max 1 request per 3.5 sec to each receiver
@@ -71,45 +66,4 @@ class Broadcaster {
     }
 }
 
-async function VK_REQUEST(id, arg) {
-    Broadcaster.receiversLastRequestTime[id] = Date.now()
-    console.log(`R ${new Date().toLocaleTimeString()}: ${id} <= ${arg}`)
-    return `Result ${arg}`
-}
-
-function dataFetch() {
-    const bData = []
-    const postsNumber = Math.floor(Math.random() * 10) + 3
-    const usersNumber = Math.floor(Math.random() * 15) + 5
-    for (let post = 0; post <= postsNumber; post+=1) {
-        const postData = {
-            id: post,
-            receivers: []
-        }
-        for (let user = 0; user <= usersNumber; user+=1) {
-            postData.receivers.push(user)
-        }
-        bData.push(postData)
-    }
-    const result = bData.reduce((acc, post) => {
-        acc.push(
-            ...post.receivers.map(
-                receiver => ({
-                    id: `${receiver}<${post.id}`,
-                    receiver,
-                    post: post.id,
-                    method: () => VK_REQUEST(receiver, post.id)
-                })
-            )
-        )
-        return acc
-    }, [])
-    console.log(`Formed: ${result.length} messages to be sent`)
-    return result
-}
-
-async function run() {
-    const startDate = Date.now()
-    Broadcaster.broadcast(null, dataFetch)
-    console.log(`Done. Spent ${Date.now() - startDate}ms.`)
-}
+module.exports = Broadcaster
