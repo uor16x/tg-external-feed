@@ -29,6 +29,12 @@ module.exports = class Post {
             + secondLineText
             + `\n${this.text}`
     }
+
+    getPhotos() {
+        return this.atts
+            .filter(att => att.type === 'photo')
+            .map(att => att.photo.sizes[att.photo.sizes.length - 1].url)
+    }
 }
 
 function dateFormatter(vkDate) {

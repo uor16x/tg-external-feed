@@ -14,7 +14,7 @@ module.exports = async (bot, vk, db) => {
         console.error(err)
     }
     const walls = mergeExecuteResults(executeResponses, allSourcesArr)
-    const fromTime = Broadcaster.lastBroadcastTime || Date.now() - 1000 * 60 * 60 * 2
+    const fromTime = Broadcaster.lastBroadcastTime || Date.now() - 1000 * 60 * 60 * 4
     const posts = formatListFromWalls(walls, fromTime)
     const messages = mergePostsWithReceivers(bot, posts, allSourcesObj)
     console.log(messages)
@@ -120,10 +120,24 @@ function spliceIntoChunks(arr, chunkSize) {
 async function sendPost(bot, receiverId, post) {
     Broadcaster.receiversLastRequestTime[receiverId] = Date.now()
     console.log(`R ${new Date().toLocaleTimeString()}: ${receiverId} <= ${post.id}`)
-    // return null
-    return bot.sendMessage(
-        receiverId,
-        post.getText(),
-        { parse_mode: 'HTML' }
-    )
+    
+    const photos = post.getPhotos()
+    if (photos.length) {
+        const mediaGroupItems = photos.map(media => ({
+            parse_mode: 'HTML',
+            type: 'photo',
+            media,
+        }))
+        mediaGroupItems[0].caption = post.getText()
+        await bot.sendMediaGroup(
+            receiverId,
+            mediaGroupItems
+        )
+    } else {
+        return bot.sendMessage(
+            receiverId,
+            post.getText(),
+            { parse_mode: 'HTML' }
+        )
+    }
 }
