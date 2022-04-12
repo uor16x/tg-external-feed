@@ -64,13 +64,11 @@ const methods = {
         }
     },
     getSourcesByUserId(id) {
-        let result = []
-        try {
-            result = db.getData(`/user/${id}/sources`)
-        } catch (err) {
-            console.error(err)
-        }
-        return result
+        const sourcesData = db.getData('/source')
+        const currUserSources = Object.keys(sourcesData)
+            .filter(key => sourcesData[key].receivers.includes(id))
+            .map(key => sourcesData[key])
+        return currUserSources
     },
 }
 

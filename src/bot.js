@@ -6,9 +6,7 @@ let groups
 const utils = {
     getSourcesReplyMarkup(sources) {
         return sources.length
-            ? keyboard
-                .sources(sources)
-                .getMarkup({ resize_keyboard: true })
+            ? keyboard.sources(sources)
             : undefined
     },
     getSourcesText(sources, firstName) {
@@ -66,24 +64,31 @@ const _methods = {
         await bot.sendMessage(
             id,
             `Welcome, ${msg.chat.first_name}!`,
-            { reply_markup: keyboard.sources().getMarkup({ resize_keyboard: true }) }
         )
     },
     sources: db => vk => bot => async msg => {
         const id = msg.chat.id
+        const msg_id = msg.message_id
+        const sources = db.getSourcesByUserId(id)
 
-        // TODO: sources list as keyboard
-        // const sources = db.getSourcesByUserId(id)
-        // const answerText = utils.getSourcesText(sources, msg.chat.first_name)
-        // const answerKeyboard = utils.getSourcesReplyMarkup(sources)
-        // await bot.sendMessage(
-        //     id,
-        //     answerText,
-        //     { 
-        //         reply_markup: answerKeyboard,
-        //         reply_to_message_id: msg.message_id
-        //     }
-        // )
+        if (!sources.length) {
+            return await bot.sendMessage(
+                id,
+                'Your sources list is empty.\nSend me a link to a vk group to continue.',
+                { 
+                    reply_markup: keyboard.sources(sources),
+                    reply_to_message_id: msg_id
+                }
+            )
+        }
+        await bot.sendMessage(
+            id,
+            'Use the keyboard buttons to delete a group',
+            { 
+                reply_markup: keyboard.sources(sources),
+                reply_to_message_id: msg_id
+            }
+        )
     },
     update: db => vk => bot => async msg => {
         // TODO: remove this method
@@ -183,17 +188,6 @@ const _methods = {
             message_id: progressMsg.message_id
         })
     },
-    requestSourceDeleteHint: db => vk => bot => async msg => {
-        const id = msg.chat.id
-        const msg_id = msg.message_id
-        await bot.sendMessage(
-            id,
-            `To delete the group type its full name as the argument.
-            \nFor example: \n /del Group1
-            \nOr use /sources to edit the list directly using buttons.`,
-            { reply_to_message_id: msg_id }
-        )
-    },
     requestSourceDelete: db => vk => bot => async (msg, match) => {
         const id = msg.chat.id
         const msg_id = msg.message_id
@@ -221,7 +215,7 @@ const _methods = {
             `Click the button below if you want to delete ${fullName} from your feed.`,
             { 
                 reply_to_message_id: msg_id,
-                reply_markup: keyboard.confirm(source.id).getMarkup({ resize_keyboard: true })
+                reply_markup: keyboard.confirm(source.id)
             }
         )
         // TODO: remove user from sources arr
@@ -255,7 +249,7 @@ const _methods = {
             chat_id: id,
             message_id: msg_id
         })
-        
+
         try {
             await db.deleteSource(id, srcId)
         } catch (deleteErr) {
@@ -264,13 +258,25 @@ const _methods = {
                 message_id: query.message.message_id
             })
         }
+
+        const updatedSources = db.getSourcesByUserId(id)
+        if (!updatedSources.length) {
+            return await bot.sendMessage(
+                id,
+                'Your sources list is empty.\nSend me a link to a vk group to continue.',
+                { 
+                    reply_markup: keyboard.sources(sources),
+                    reply_to_message_id: msg_id
+                }
+            )
+        }
         
         await bot.sendMessage(
             id,
             `Sources list updated.`,
             {
                 reply_to_message_id: msg_id,
-                reply_markup: keyboard.sources().getMarkup({ resize_keyboard: true })
+                reply_markup: keyboard.sources(updatedSources)
             }
         )
     }
@@ -299,10 +305,8 @@ function getConfiguredMethods(db, vk, bot, methods) {
 
 function configureBot(bot, methods) {
     bot.onText(/\/start/, methods.start)
-    bot.onText(/Sources/, methods.sources)
-    bot.onText(/Update/, methods.update)
-    bot.onText(/\/del (.+)/, methods.requestSourceDelete)
-    bot.onText(/^\/del$/, methods.requestSourceDeleteHint)
+    bot.onText(/\/sources/, methods.sources)
+    bot.onText(/✘ (.+)/, methods.requestSourceDelete)
     bot.onText(vkRegex, methods.addSource)
     bot.on('callback_query', methods.removeSource)
 }
