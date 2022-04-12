@@ -22,12 +22,40 @@ module.exports = class Post {
     getText() {
         const { firstLine, secondLine } = dateFormatter(this.date)
         const secondLineText = secondLine
-            ? `${secondLine}\n`
+            ? `\n${secondLine}`
             : ''
         return ''
-            + `[ <code>${this.name}</code> ] @ <i>${firstLine}</i>\n`
+            + `[ <code>${this.name}</code> ] @ <i>${firstLine}</i>`
             + secondLineText
             + `\n${this.text}`
+            + this.getAttachmentsText()
+    }
+
+    getAttachmentsText() {
+        return this.atts
+            .filter(att => att.type !== 'photo')
+            .reduce((acc, att) => {
+                switch (att.type) {
+                    case 'video':
+                        acc += `\nVideo: ${att.video.title}`
+                        break
+                    case 'link':
+                        acc += ('\nLink: \n'
+                            + `<b>${att.link.caption}</b> >> `
+                            + `<pre>${att.link.description}</pre>\n`
+                            + `<a href="${att.link.url}">Open</a>`
+                        )
+                        break
+                    case 'audio':
+                        acc += `\nAudio: ${att.audio.artist} - ${att.audio.title}`
+                        break
+                    case 'file':
+                        acc += `\nFile: ${att.file.title}`
+                    default:
+                        acc =+ `\nUnsupported attachment: ${att.type}`
+                }
+                return acc
+            }, '')
     }
 
     getPhotos() {

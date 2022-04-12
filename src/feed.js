@@ -14,10 +14,10 @@ module.exports = async (bot, vk, db) => {
         console.error(err)
     }
     const walls = mergeExecuteResults(executeResponses, allSourcesArr)
-    const fromTime = Broadcaster.lastBroadcastTime || Date.now() - 1000 * 60 * 60 * 4
+    const fromTime = Broadcaster.lastBroadcastTime || Date.now() - 1000 * 60 * 60 * 128
     const posts = formatListFromWalls(walls, fromTime)
     const messages = mergePostsWithReceivers(bot, posts, allSourcesObj)
-    console.log(messages)
+    console.log(`Formed ${messages.length} messages`)
     return messages
 }
 
@@ -82,7 +82,7 @@ function formatListFromWalls(walls, afterDate) {
         return acc
     }, [])
     .filter(post => !post.pinned)
-    .filter(post => post.date > afterDate)
+    // .filter(post => post.date > afterDate)
     .sort((postA, postB) => postB.date - postA.date)
 }
 
