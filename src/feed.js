@@ -1,4 +1,5 @@
 const Broadcaster = require('./Broadcaster')
+const Post = require('./Post')
 
 module.exports = async (bot, vk, db) => {
     const allSourcesObj = db.getAllSourcesObj()
@@ -13,7 +14,7 @@ module.exports = async (bot, vk, db) => {
         console.error(err)
     }
     const walls = mergeExecuteResults(executeResponses, allSourcesArr)
-    const fromTime = Broadcaster.lastBroadcastTime || Date.now() - 1000 * 60 * 60 * 5
+    const fromTime = Broadcaster.lastBroadcastTime || Date.now() - 1000 * 60 * 60 * 2
     const posts = formatListFromWalls(walls, fromTime)
     const messages = mergePostsWithReceivers(bot, posts, allSourcesObj)
     console.log(messages)
@@ -69,15 +70,15 @@ function mergeExecuteResults(executeResponses, sources) {
 function formatListFromWalls(walls, afterDate) {
     return Object.keys(walls).reduce((acc, srcId) => {
         const currSrcPosts = walls[srcId].posts
-        acc.push(...currSrcPosts.map(post => ({
-            id: post.id,
-            name: walls[srcId].name,
-            srcId: srcId,
-            pinned: post.is_pinned,
-            atts: post.attachments,
-            text: post.text,
-            date: post.date * 1000
-        })))
+        acc.push(...currSrcPosts.map(post => new Post(
+            post.id,
+            walls[srcId].name,
+            srcId,
+            post.text,
+            post.attachments,
+            post.date * 1000,
+            post.is_pinned
+        )))
         return acc
     }, [])
     .filter(post => !post.pinned)
@@ -119,8 +120,10 @@ function spliceIntoChunks(arr, chunkSize) {
 async function sendPost(bot, receiverId, post) {
     Broadcaster.receiversLastRequestTime[receiverId] = Date.now()
     console.log(`R ${new Date().toLocaleTimeString()}: ${receiverId} <= ${post.id}`)
+    // return null
     return bot.sendMessage(
         receiverId,
-        'new post from ' + post.name
+        post.getText(),
+        { parse_mode: 'HTML' }
     )
 }
