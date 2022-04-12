@@ -150,37 +150,38 @@ const _methods = {
         // })
     },
     addSource: db => vk => bot => async msg => {
-        // TODO: add user to source's array
-        // const id = msg.chat.id
-        // const url = msg.text
-        // const msg_id = msg.message_id
+        const id = msg.chat.id
+        const url = msg.text
+        const msg_id = msg.message_id
 
-        // const progressMsg = await bot.sendMessage(
-        //     id,
-        //     `Processing...`,
-        //     { reply_to_message_id: msg_id }
-        // )
-        // let groupData = null
-        // try {
-        //     groupData = await vk.getGroupData(url)
-        // } catch (groupDataReceiveErr) {
-        //     return bot.editMessageText(`Failed to process the group: ${groupDataReceiveErr.message}`, {
-        //         chat_id: id,
-        //         message_id: progressMsg.message_id
-        //     })
-        // }
-        // try {
-        //     db.addSource(id, groupData)
-        // } catch (saveSourceErr) {
-        //     return bot.editMessageText(`Failed to save the source: ${saveSourceErr.message}`, {
-        //         chat_id: id,
-        //         message_id: progressMsg.message_id
-        //     })
-        // }
-        // bot.editMessageText(`Processing done.\n${groupData.name} saved.`, {
-        //     chat_id: id,
-        //     message_id: progressMsg.message_id
-        // })
+        const progressMsg = await bot.sendMessage(
+            id,
+            `Processing...`,
+            { reply_to_message_id: msg_id }
+        )
+
+        let groupData = null
+        try {
+            groupData = await vk.getGroupData(url)
+        } catch (groupDataReceiveErr) {
+            return bot.editMessageText(`Failed to process the group: ${groupDataReceiveErr.message}`, {
+                chat_id: id,
+                message_id: progressMsg.message_id
+            })
+        }
+
+        try {
+            db.addSource(id, groupData)
+        } catch (saveSourceErr) {
+            return bot.editMessageText(`Failed to save the source: ${saveSourceErr.message}`, {
+                chat_id: id,
+                message_id: progressMsg.message_id
+            })
+        }
+        bot.editMessageText(`Processing done.\n${groupData.name} saved.`, {
+            chat_id: id,
+            message_id: progressMsg.message_id
+        })
     },
     deleteSource: db => vk => bot => async ({ data, query }) => {
         // TODO: remove user from sources arr

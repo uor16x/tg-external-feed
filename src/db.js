@@ -3,37 +3,36 @@ const { JsonDB } = require('node-json-db');
 let db = null
 
 const methods = {
-    getUserById(id) {
-        let user = null
+    getSourceById(id) {
+        let source = null
         try {
-            user = db.getData(`/user/${id}`)
+            source = db.getData(`/source/${id}`)
+        } catch (getErr) {
+            console.log(`Source with id ${id} not found`)
+        }
+        return source
+    },
+    getOrCreateSource(sourceData) {
+        let source = this.getSourceById(sourceData.id)
+        if (!source) {
+            source = {
+                ...sourceData,
+                receivers: []
+            }
+            db.push(`/source/${sourceData.id}`, source)
+        }
+        return source
+    },
+    addSource(receiverId, sourceData) {
+        try {
+            const source = this.getOrCreateSource(sourceData)
+            const isCurrentReceiverPresent = source.receivers.find(rcv => rcv === userId)
+            if (!isCurrentReceiverPresent) {
+                db.push(`/source/${source.id}/receivers[]`, receiverId)
+            }
         } catch (err) {
             console.error(err)
-        }
-        return user
-    },
-    getOrCreateUser(id) {
-        let user = this.getUserById(id)
-        if (!user) {
-            user = {
-                id,
-                sources: [],
-                dateStarted: new Date().toISOString()
-            }
-            db.push(`/user/${id}`, user)
-        }
-        return user
-    },
-    addSource(id, data) {
-        try {
-            const sources = this.getSourcesByUserId(id)
-            const currSrc = sources.find(item => item.id === data.id)
-            if (!currSrc) {
-                db.push(`/user/${id}/sources[]`, data)
-            }
-        } catch (err) {
-            console.error(err)
-            throw new Error('Failed to add the source to DB')
+            throw new Error('Failed to add the source entry to DB')
         }
     },
     deleteSource(id, srcId) {
