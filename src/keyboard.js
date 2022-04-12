@@ -6,11 +6,22 @@ const {
     InlineKeyboardButton,
 } = require('node-telegram-keyboard-wrapper')
 
-module.exports = sources => new ReplyKeyboard(
-    new Row(
-        new KeyboardButton('/del котокрошка'),
+module.exports = {
+    sources: list => new ReplyKeyboard(
+        new Row(
+            new KeyboardButton('/del котокрошка'),
+        ),
     ),
-)
+    confirm: id => new InlineKeyboard(
+        new Row(
+            new InlineKeyboardButton(
+                'Confirm',
+                'callback_data',
+                id
+            ),
+        )
+    ) 
+}
 
 module.exports2 = {
     menu: currentSrc => {

@@ -35,21 +35,33 @@ const methods = {
             throw new Error('Failed to add the source entry to DB')
         }
     },
-    deleteSource(id, srcId) {
-        let name = null
+    getSourceByFullName(fullName) {
+        const sourcesData = db.getData('/source')
+        const allSources = Object.keys(sourcesData).reduce((acc, srcId) => {
+            acc.push(sourcesData[srcId])
+            return acc
+        }, [])
+        const currSource = allSources.find(src => src.name === fullName)
+        if (!currSource) {
+            throw new Error('No such source')
+        }
+        return currSource
+    },
+    deleteSource(userId, srcId) {
         try {
-            const sources = this.getSourcesByUserId(id)
-            const index = sources.findIndex(item => item.id)
-            if (index > -1) {
-                const groupData = sources[index]
-                name = groupData.name
-                db.delete(`/user/${id}/sources[${index}]`)
+            let source = this.getSourceById(srcId)
+            source.receivers = source.receivers
+                .filter(rcvId => rcvId !== userId)
+            const path = `/source/${srcId}`
+            if (!source.receivers.length) {
+                db.delete(path)
+            } else {
+                db.push(path, source)
             }
         } catch (err) {
             console.error(err)
-            throw new Error('Failed to add the source to DB')
+            throw new Error('Failed to delete the source from DB')
         }
-        return name
     },
     getSourcesByUserId(id) {
         let result = []
