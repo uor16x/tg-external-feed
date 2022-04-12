@@ -199,9 +199,6 @@ module.exports = function({ db, vk }) {
         configureBot(_bot, methods)
         bot =_bot
     }
-    if (!groups) {
-        groups = require('./groups')(vk)
-    }
     return bot
 }
 
