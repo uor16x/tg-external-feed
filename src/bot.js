@@ -6,7 +6,6 @@ const TEXT = {
     SOURCES_EMPTY: 'Your sources list is empty.\nSend me a link to a vk group to continue.'
 }
 
-let groups
 const utils = {
     async sendSources(
         bot,
@@ -33,19 +32,6 @@ const utils = {
                 reply_to_message_id: reply_to
             }
         )
-    },
-    getSourcesReplyMarkup(sources) {
-        return sources.length
-            ? keyboard.sources(sources)
-            : undefined
-    },
-    getSourcesText(sources) {
-        return sources.length
-            ? 'Your sources list is empty.\nSend me a link to a vk group to continue.'
-            :
-            `Your sources list is empty.
-            \nSend me a link to a vk group to continue.  
-            `
     },
     attachmentFormatter(att) {
         if (att.type === 'photo') {
@@ -105,70 +91,6 @@ const _methods = {
             'Use the keyboard buttons to delete a group.',
             msg_id
         )
-    },
-    update: db => vk => bot => async msg => {
-        // TODO: remove this method
-        // const id = msg.chat.id
-
-        // const feedMsg = await bot.sendMessage(
-        //     id,
-        //     'Preparing your feed...'
-        // )
-        // const sources = db.getSourcesByUserId(id)
-        // const post = await groups.formFeed(id, sources)
-        // const feedText = utils.formatPost(post)
-
-        // await bot.sendMediaGroup(
-        //     id,
-        //     [{
-        //         caption: feedText,
-        //         type: 'photo',
-        //         media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
-        //     }, {
-        //         type: 'photo',
-        //         media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
-        //     }, {
-        //         type: 'photo',
-        //         media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
-        //     }]
-        // )
-        // await bot.sendMessage(
-        //     id,
-        //     '➤➤➤',
-        //     {
-        //         reply_markup: keyboard
-        //             .next
-        //             .getMarkup({ resize_keyboard: true })
-        //     }
-        // )
-
-        // TODO: refactor to separated method
-        // if (post.atts) {
-        //     const photos = utils.getPostPhotos(post)
-        //     if (photos.length) {
-        //         await bot.sendMediaGroup(
-        //             id,
-        //             [{
-        //                 type: 'photo',
-        //                 media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
-        //             }, {
-        //                 type: 'photo',
-        //                 media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
-        //             }, {
-        //                 type: 'photo',
-        //                 media: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png'
-        //             }]
-        //         )
-        //     }
-        // }
-
-        // bot.editMessageText(feedText, {
-        //     chat_id: id,
-        //     message_id: feedMsg.message_id,
-        //     reply_markup: keyboard
-        //         .next
-        //         .getMarkup({ resize_keyboard: true })
-        // })
     },
     addSource: db => vk => bot => async msg => {
         const id = msg.chat.id
@@ -293,7 +215,7 @@ function getConfiguredMethods(db, vk, bot, methods) {
 function configureBot(bot, methods) {
     bot.onText(/\/start/, methods.start)
     bot.onText(/\/sources/, methods.sources)
-    bot.onText(/✘ (.+)/, methods.requestSourceDelete)
     bot.onText(vkRegex, methods.addSource)
+    bot.onText(/✘ (.+)/, methods.requestSourceDelete)
     bot.on('callback_query', methods.removeSource)
 }

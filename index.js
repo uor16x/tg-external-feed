@@ -4,16 +4,6 @@ try {
     src.initBot({ 
         db: src.db(),
         vk: src.vk()
-        // vk: {
-        //     getGroupData(url) {
-        //         // TODO: add vk
-        //         return {
-        //             name: 'Котокрошка',
-        //             id: '123',
-        //             url,
-        //         }
-        //     }
-        // }
     })
 } catch (err) {
     console.error(err)
