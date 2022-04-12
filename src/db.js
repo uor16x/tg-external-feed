@@ -26,7 +26,7 @@ const methods = {
     addSource(receiverId, sourceData) {
         try {
             const source = this.getOrCreateSource(sourceData)
-            const isCurrentReceiverPresent = source.receivers.find(rcv => rcv === userId)
+            const isCurrentReceiverPresent = source.receivers.find(rcv => rcv === receiverId)
             if (!isCurrentReceiverPresent) {
                 db.push(`/source/${source.id}/receivers[]`, receiverId)
             }

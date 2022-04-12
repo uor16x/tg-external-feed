@@ -2,19 +2,46 @@ const keyboard = require('./keyboard')
 const dayjs = require('dayjs')
 const vkRegex = /(https?:\/\/(.+?\.)?vk\.com(\/[A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)/
 
+const TEXT = {
+    SOURCES_EMPTY: 'Your sources list is empty.\nSend me a link to a vk group to continue.'
+}
+
 let groups
 const utils = {
+    async sendSources(
+        bot,
+        id,
+        sources,
+        successMsg,
+        reply_to
+    ) {
+        if (!sources.length) {
+            return await bot.sendMessage(
+                id,
+                TEXT.SOURCES_EMPTY,
+                { 
+                    reply_markup: keyboard.sources(sources),
+                    reply_to_message_id: msg_id
+                }
+            )
+        }
+        await bot.sendMessage(
+            id,
+            successMsg,
+            { 
+                reply_markup: keyboard.sources(sources),
+                reply_to_message_id: reply_to
+            }
+        )
+    },
     getSourcesReplyMarkup(sources) {
         return sources.length
             ? keyboard.sources(sources)
             : undefined
     },
-    getSourcesText(sources, firstName) {
+    getSourcesText(sources) {
         return sources.length
-            ? 
-            `Here is your sources list, ${firstName}!
-            \nPress on the option to view posts.
-            `
+            ? 'Your sources list is empty.\nSend me a link to a vk group to continue.'
             :
             `Your sources list is empty.
             \nSend me a link to a vk group to continue.  
@@ -71,23 +98,12 @@ const _methods = {
         const msg_id = msg.message_id
         const sources = db.getSourcesByUserId(id)
 
-        if (!sources.length) {
-            return await bot.sendMessage(
-                id,
-                'Your sources list is empty.\nSend me a link to a vk group to continue.',
-                { 
-                    reply_markup: keyboard.sources(sources),
-                    reply_to_message_id: msg_id
-                }
-            )
-        }
-        await bot.sendMessage(
+        await utils.sendSources(
+            bot,
             id,
-            'Use the keyboard buttons to delete a group',
-            { 
-                reply_markup: keyboard.sources(sources),
-                reply_to_message_id: msg_id
-            }
+            sources,
+            'Use the keyboard buttons to delete a group.',
+            msg_id
         )
     },
     update: db => vk => bot => async msg => {
@@ -183,10 +199,15 @@ const _methods = {
                 message_id: progressMsg.message_id
             })
         }
-        bot.editMessageText(`Processing done.\n${groupData.name} saved.`, {
-            chat_id: id,
-            message_id: progressMsg.message_id
-        })
+
+        const sources = db.getSourcesByUserId(id)
+        await utils.sendSources(
+            bot,
+            id,
+            sources,
+            `Done.\n${groupData.name} saved.`,
+            progressMsg.message_id
+        )
     },
     requestSourceDelete: db => vk => bot => async (msg, match) => {
         const id = msg.chat.id
@@ -218,28 +239,6 @@ const _methods = {
                 reply_markup: keyboard.confirm(source.id)
             }
         )
-        // TODO: remove user from sources arr
-        // const id = query.from.id
-        // try {
-        //     const name = db.deleteSource(id, data)
-        //     const sources = db.getSourcesByUserId(id)
-        //     const replyMarkup = utils.getSourcesReplyMarkup(sources)
-        //     if (!replyMarkup) {
-        //         const text = utils.getSourcesText(sources, query.message.chat.first_name)
-        //         return bot.editMessageText(text, {
-        //             chat_id: id,
-        //             message_id: query.message.message_id
-        //         })
-        //     }
-        //     await bot.editMessageReplyMarkup(replyMarkup, {
-        //         chat_id: id,
-        //         message_id: query.message.message_id
-        //     })
-        //     await bot.sendMessage(id, `${name} deleted.`)
-        // } catch (err) {
-            // console.error(`Failed to delete the group: ${err}`)
-            // await bot.sendMessage(id, `Failed to delete the group.`)
-        // }
     },
     removeSource: db => vk => bot => async query => {
         const id = query.from.id
@@ -260,24 +259,12 @@ const _methods = {
         }
 
         const updatedSources = db.getSourcesByUserId(id)
-        if (!updatedSources.length) {
-            return await bot.sendMessage(
-                id,
-                'Your sources list is empty.\nSend me a link to a vk group to continue.',
-                { 
-                    reply_markup: keyboard.sources(sources),
-                    reply_to_message_id: msg_id
-                }
-            )
-        }
-        
-        await bot.sendMessage(
+        await utils.sendSources(
+            bot,
             id,
-            `Sources list updated.`,
-            {
-                reply_to_message_id: msg_id,
-                reply_markup: keyboard.sources(updatedSources)
-            }
+            updatedSources,
+            'Sources list updated.',
+            msg_id
         )
     }
 }
