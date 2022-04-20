@@ -20,13 +20,8 @@ module.exports = class Post {
     }
 
     getText() {
-        const { firstLine, secondLine } = dateFormatter(this.date)
-        const secondLineText = secondLine
-            ? `\n${secondLine}`
-            : ''
         return ''
-            + `[ <code>${this.name}</code> ] @ <i>${firstLine}</i>`
-            + secondLineText
+            + `[ <code>${this.name}</code> ] @ <i>${dateFormatter(this.date)}</i>`
             + `\n${this.text}`
             + this.getAttachmentsText()
     }
@@ -68,14 +63,11 @@ module.exports = class Post {
 function dateFormatter(vkDate) {
     const date = dayjs(vkDate)
     const today = dayjs()
-    const firstLine = date.format('HH:mm')
-    let secondLine = ''
     if (today.isSame(date, 'day')) {
-        return { firstLine, secondLine }
+        return date.format('HH:mm')
     } else if (today.isSame(date, 'year')) {
-        secondLine = date.format('D MMM')
+        return date.format('D MMM')
     } else {
-        secondLine = date.format('D MMM YY')
+        return date.format('D MMM YY')
     }
-    return { firstLine, secondLine }
 }

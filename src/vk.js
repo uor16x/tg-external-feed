@@ -53,6 +53,21 @@ const methods = {
             owner_id: `-${src.id}`
         })
     },
+    async getComments(
+        owner_id,
+        post_id,
+        offset,
+        comment_id,
+    ) {
+        return vk.api.wall.getComments({
+            owner_id,
+            post_id,
+            offset,
+            comment_id,
+            extended: true,
+            count: 5
+        })
+    },
     async execute(code) {
         return vk.api.execute({ code })
     }

@@ -22,5 +22,14 @@ module.exports = {
                 id
             ),
         )
+    ).getMarkup({ resize_keyboard: true }),
+    nextPage: (ownerId, postId, offset, commentId) => new InlineKeyboard(
+        new Row(
+            new InlineKeyboardButton(
+                'Next page',
+                'callback_data',
+                `${ownerId}_${postId}_${offset}${commentId ? ('_' + commentId) : ''}`
+            ),
+        )
     ).getMarkup({ resize_keyboard: true })
 }

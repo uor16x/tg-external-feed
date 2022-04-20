@@ -1,3 +1,4 @@
+const nodeBotApi = require('node-telegram-bot-api')
 const feed = require('./feed')
 const Broadcaster = require('./Broadcaster')
 const keyboard = require('./keyboard')
@@ -34,41 +35,6 @@ const utils = {
                 reply_to_message_id: reply_to
             }
         )
-    },
-    attachmentFormatter(att) {
-        if (att.type === 'photo') {
-            return ''
-        }
-        // TODO: parse atts
-        return `${att.type}\n`
-    },
-    getPostPhotos(post) {
-        return post.atts
-            .filter(att => att.type === 'photo')
-    },
-    formatPost(post) {
-        const atts = post.atts
-            ? `\n${post.atts.reduce((acc, att) => {
-                acc += this.attachmentFormatter(att)
-                return acc
-            }, '')}`
-            : ''
-        return `[${post.name}]\n`
-            + `${this.dateFormatter(post.date)}\n`
-            + `\n${post.text}\n`
-            + atts
-            + '\n/next'
-    },
-    dateFormatter(vkDate) {
-        const date = dayjs(vkDate * 1000)
-        const today = dayjs()
-        if (today.isSame(date, 'day')) {
-            return date.format('@ HH:mm')
-        }
-        if (today.isSame(date, 'year')) {
-            return date.format('D MMM @ HH:mm')
-        }
-        return date.format('D MMM YYYY @ HH:mm')
     }
 }
 
@@ -196,12 +162,13 @@ const _methods = {
 let bot
 module.exports = function({ db, vk }) {
     if (!bot) {
-        const _bot = new (require('node-telegram-bot-api'))(process.env.BOT_TOKEN, { polling: true })
+        const _bot = new (nodeBotApi)(process.env.BOT_TOKEN, { polling: true })
         const methods = getConfiguredMethods(db, vk, _bot, _methods)
         configureBot(_bot, methods)
         bot =_bot
 
-        Broadcaster.broadcast(null, () => feed(bot, vk, db))
+        require('./commentsBot')(vk)
+        // Broadcaster.broadcast(null, () => feed(bot, vk, db))
     }
     return bot
 }

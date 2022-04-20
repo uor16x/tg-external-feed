@@ -121,23 +121,23 @@ async function sendPost(bot, receiverId, post) {
     Broadcaster.receiversLastRequestTime[receiverId] = Date.now()
     console.log(`R ${new Date().toLocaleTimeString()}: ${receiverId} <= ${post.id}`)
     
-    const photos = post.getPhotos()
-    if (photos.length) {
-        const mediaGroupItems = photos.map(media => ({
-            parse_mode: 'HTML',
-            type: 'photo',
-            media,
-        }))
-        mediaGroupItems[0].caption = post.getText()
-        await bot.sendMediaGroup(
-            receiverId,
-            mediaGroupItems
-        )
-    } else {
-        return bot.sendMessage(
-            receiverId,
-            post.getText(),
-            { parse_mode: 'HTML' }
-        )
-    }
+    // const photos = post.getPhotos()
+    // if (photos.length) {
+    //     const mediaGroupItems = photos.map(media => ({
+    //         parse_mode: 'HTML',
+    //         type: 'photo',
+    //         media,
+    //     }))
+    //     mediaGroupItems[0].caption = post.getText()
+    //     await bot.sendMediaGroup(
+    //         receiverId,
+    //         mediaGroupItems
+    //     )
+    // } else {
+    //     return bot.sendMessage(
+    //         receiverId,
+    //         post.getText(),
+    //         { parse_mode: 'HTML' }
+    //     )
+    // }
 }
