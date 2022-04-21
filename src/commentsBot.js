@@ -11,7 +11,8 @@ module.exports = async vk => {
             commentsBot,
             vk,
             id,
-            match[1]
+            match[1],
+            msg.message_id
         )
     })
     commentsBot.on('callback_query', async query => {
@@ -21,7 +22,8 @@ module.exports = async vk => {
             commentsBot,
             vk,
             id,
-            query.data
+            query.data,
+            query.message.message_id
         )
     })
 }
@@ -30,7 +32,8 @@ async function sendComments(
     bot,
     vk,
     receiver,
-    url
+    url,
+    messageId = null,
 ) {
     const [
         ownerId,
@@ -48,7 +51,10 @@ async function sendComments(
         count
     )
     if (!comments.items.length) {
-        // TODO: remove 'Next' button
+        await bot.editMessageReplyMarkup(null, {
+            chat_id: receiver,
+            message_id: messageId
+        })
         return bot.sendMessage(
             receiver,
             'No more comments'
