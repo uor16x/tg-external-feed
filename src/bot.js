@@ -1,6 +1,7 @@
 const nodeBotApi = require('node-telegram-bot-api')
 const feed = require('./feed')
 const Broadcaster = require('./Broadcaster')
+const Comment = require('./Comment')
 const keyboard = require('./keyboard')
 const dayjs = require('dayjs')
 const vkRegex = /(https?:\/\/(.+?\.)?vk\.com(\/[A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)/
@@ -167,6 +168,7 @@ module.exports = function({ db, vk }) {
         configureBot(_bot, methods)
         bot =_bot
         require('./commentsBot')(vk)
+
         // Broadcaster.broadcast(null, () => feed(bot, vk, db))
     }
     return bot

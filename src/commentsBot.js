@@ -38,7 +38,7 @@ async function sendComments(
     const [
         ownerId,
         postId,
-        offset,
+        offset = 0,
         commentId,
         count
     ] = url.split('_')
@@ -86,7 +86,7 @@ async function sendComments(
                 ? nextPage(
                     ownerId,
                     postId,
-                    +offset + COMMENTS_PER_MSG,
+                    + offset + COMMENTS_PER_MSG,
                     commentId,
                 )
                 : undefined

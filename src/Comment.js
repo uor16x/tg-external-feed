@@ -74,17 +74,20 @@ module.exports = class Comment {
 
     getText(singleCommentMode = false) {
         this.replaceTextRefs()
-        const textTabulated = `${this.text}`.replaceAll('\n', `\n${BORDERS.TAB}`)
         const maxCommentLength = singleCommentMode
             ? MAX_COMMENT_TEXT_LENGTH * 5
             : MAX_COMMENT_TEXT_LENGTH
+        const textTabulated = `${this.text}`.replaceAll('\n', `\n${BORDERS.TAB}`)
         if (textTabulated.length > maxCommentLength) {
-            this.text = `\n${BORDERS.TAB}` + this.text.substring(0, maxCommentLength) + ' ...'
+            this.text = this.text.substring(0, maxCommentLength) + ' ...'
             if (singleCommentMode) {
                 this.text += '\n<b> ⚠️ This comment is to big to be sent ⚠️</b>'
             } else {
-                this.text += `\n<a href="${Comment.getCommentLink(this.ownerId, this.postId, 0, this.id, 1)}">Load full comment</a>`
+                this.text += `\n<a href="${Comment.getCommentLink(this.ownerId, this.postId, 0, this.id, 1)}">View full comment</a>`
             }
+        }
+        if (this.text.length) {
+            this.text = `\n${this.text}`
         }
         return this.text
     }
@@ -94,7 +97,6 @@ module.exports = class Comment {
         const atts = this.getAttachmentsText()
         const threads = this.parseThreads()
         const mainContext = ''
-            // TODO: parse name inside comment text
             + this.getText(singleCommentMode)
             + atts
             + (this.likes ? `\n♡ ${this.likes}` : '')
