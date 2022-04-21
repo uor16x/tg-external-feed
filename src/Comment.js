@@ -4,6 +4,7 @@ const BORDERS = {
     RIGHT_TOP: ' ◥═╗',
     TAB: '│\t\t'
 }
+const MAX_COMMENT_TEXT_LENGTH = 500
 const MAX_NAME_LENGTH = 20
 
 module.exports = class Comment {
@@ -38,22 +39,58 @@ module.exports = class Comment {
         }, {})
     }
 
-    getName() {
-        return this.sendersData
-        && this.sendersData[Math.abs(this.fromId)]
-        && this.sendersData[Math.abs(this.fromId)]
-            .substring(0, MAX_NAME_LENGTH) + '...'
-        || 'DELETED'
+    static getCommentLink(
+        ownerId,
+        postId,
+        offset,
+        commentId,
+        count
+    ) {
+        let link = `https://t.me/${process.env.COMMENTS_BOT_ALIAS}?start=${ownerId}_${postId}`
+        if (offset !== undefined) {
+            link += `_${offset}`
+        }
+        if (commentId !== undefined) {
+            link += `_${commentId}`
+        }
+        if (count !== undefined) {
+            link += `_${count}`
+        }
+        return link
     }
 
-    getText() {
+    getName() {
+        const name = this.sendersData[Math.abs(this.fromId)] || 'DELETED'
+        if (name > MAX_NAME_LENGTH) {
+            return name.substring(0, MAX_NAME_LENGTH) + '...'
+        }
+        return name
+    }
+
+    getText(singleCommentMode = false) {
+        const textTabulated = `${this.text}`.replaceAll('\n', `\n${BORDERS.TAB}`)
+        const maxCommentLength = singleCommentMode
+            ? MAX_COMMENT_TEXT_LENGTH * 5
+            : MAX_COMMENT_TEXT_LENGTH
+        if (textTabulated.length > maxCommentLength) {
+            this.text = this.text.substring(0, maxCommentLength) + ' ...'
+            if (singleCommentMode) {
+                this.text += '\n<b> ⚠️ This comment is to big to be sent ⚠️</b>'
+            } else {
+                this.text += `\n<a href="${Comment.getCommentLink(this.ownerId, this.postId, 0, this.id, 1)}">Load full comment</a>`
+            }
+        }
+        return this.text
+    }
+
+    asText(singleCommentMode = false) {
         const topBorder = `${BORDERS.LEFT_TOP}<code>${this.getName()}</code>${BORDERS.RIGHT_TOP}`
         const atts = this.parseAtts()
         const threads = this.parseThreads()
         const mainContext = ''
             + BORDERS.TAB
             // TODO: parse name inside comment text
-            + this.text
+            + this.getText(singleCommentMode)
             + (atts ? `\n${atts}` : '')
             + (this.likes ? `\n♡ ${this.likes}` : '')
             + (threads ? `\n${threads}` : '')
@@ -67,7 +104,7 @@ module.exports = class Comment {
 
     parseThreads() {
         return this.threadCount
-            ? `<a href="https://t.me/${process.env.COMMENTS_BOT_ALIAS}?start=${this.ownerId}_${this.postId}_${0}_${this.id}">Thread [${this.threadCount}]</a>`
+            ? `<a href="${Comment.getCommentLink(this.ownerId, this.postId, 0, this.id)}">Thread [${this.threadCount}]</a>`
             : ''
     }
 

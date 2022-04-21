@@ -1,47 +1,27 @@
 const Comment = require('./Comment')
 const { nextPage } = require('./keyboard')
-const MAX_COMMENT_LENGTH = 4000
+const COMMENTS_PER_MSG = 5
 
 module.exports = async vk => {
     const commentsBot = new (require('node-telegram-bot-api'))(process.env.COMMENTS_BOT_TOKEN, { polling: true })
     commentsBot.onText(/start (.+)/, async (msg, match) => {
         const id = msg.chat.id
-        const postUrl = match[1]
-        const [
-            ownerId,
-            postId,
-            offset,
-            commentId
-        ] = postUrl.split('_')
         // TODO: handle err
         await sendComments(
             commentsBot,
             vk,
             id,
-            ownerId,
-            postId,
-            offset,
-            commentId
+            match[1]
         )
     })
     commentsBot.on('callback_query', async query => {
         const id = query.from.id
-        const postUrl = query.data
-        const [
-            ownerId,
-            postId,
-            offset,
-            commentId
-        ] = postUrl.split('_')
         // TODO: handle err
         await sendComments(
             commentsBot,
             vk,
             id,
-            ownerId,
-            postId,
-            offset,
-            commentId
+            query.data
         )
     })
 }
@@ -50,16 +30,22 @@ async function sendComments(
     bot,
     vk,
     receiver,
-    ownerId,
-    postId,
-    offset,
-    commentId
+    url
 ) {
+    const [
+        ownerId,
+        postId,
+        offset,
+        commentId,
+        count
+    ] = url.split('_')
+
     const comments = await vk.getComments(
         ownerId,
         postId,
         offset,
-        commentId
+        commentId,
+        count
     )
     if (!comments.items.length) {
         // TODO: remove 'Next' button
@@ -83,37 +69,21 @@ async function sendComments(
         ]
     ))
 
-    const messages = formCommentsMessages(commentItems.map(item => item.getText()))
-    console.log(messages)
+    const message = commentItems.map(item => item.asText(+count === 1)).join('\n')
     await bot.sendMessage(
         receiver,
-        messages[0],
+        message,
         {
             parse_mode: 'HTML',
             disable_web_page_preview: true,
-            reply_markup: nextPage(
-                ownerId,
-                postId,
-                +offset + 5,
-                commentId,
-            )
+            reply_markup: commentItems.length === COMMENTS_PER_MSG
+                ? nextPage(
+                    ownerId,
+                    postId,
+                    +offset + COMMENTS_PER_MSG,
+                    commentId,
+                )
+                : undefined
         }
     )
-}
-
-function formCommentsMessages(comments) {
-    const messages = []
-    let msg = ''
-    comments.forEach((comment, index) => {
-        const newPageRequired = msg.length + comment.length >= MAX_COMMENT_LENGTH
-        if (newPageRequired) {
-            messages.push(`${msg}`)
-            msg = ''
-        }
-        msg += `${comment}\n\n`
-        if (index === comments.length - 1) {
-            messages.push(`${msg}`)
-        }
-    })
-    return messages
 }

@@ -166,7 +166,6 @@ module.exports = function({ db, vk }) {
         const methods = getConfiguredMethods(db, vk, _bot, _methods)
         configureBot(_bot, methods)
         bot =_bot
-
         require('./commentsBot')(vk)
         // Broadcaster.broadcast(null, () => feed(bot, vk, db))
     }

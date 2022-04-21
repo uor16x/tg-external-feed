@@ -53,20 +53,36 @@ const methods = {
             owner_id: `-${src.id}`
         })
     },
+    async getOneComment(
+        owner_id,
+        comment_id
+    ) {
+        return vk.api.wall.getComment({
+            owner_id,
+            comment_id,
+            extended: true,
+        })
+    },
     async getComments(
         owner_id,
         post_id,
         offset,
         comment_id,
+        count = 5
     ) {
-        return vk.api.wall.getComments({
+        const params = {
             owner_id,
             post_id,
             offset,
             comment_id,
             extended: true,
-            count: 5
-        })
+            count
+        }
+        if (+count === 1 && comment_id !== undefined) {
+            params.start_comment_id = comment_id
+            params.comment_id = undefined
+        }
+        return vk.api.wall.getComments(params)
     },
     async execute(code) {
         return vk.api.execute({ code })
