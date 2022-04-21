@@ -64,12 +64,24 @@ const methods = {
         }
     },
     getAllSourcesArr() {
-        const sourcesData = db.getData('/source')
-        return Object.keys(sourcesData)
-            .map(key => sourcesData[key])
+        let result = []
+        try {
+            const sourcesData = db.getData('/source')
+            result = Object.keys(sourcesData)
+                .map(key => sourcesData[key])
+        } catch {
+            console.log('No source so far')
+        }
+        return result
     },
     getAllSourcesObj() {
-        return db.getData('/source')
+        let result = {}
+        try {
+            result = db.getData('/source')
+        } catch {
+            console.log('No source so far')
+        }
+        return result
     },
     getSourcesByUserId(id) {
         return this.getAllSourcesArr()

@@ -1,10 +1,13 @@
 const Broadcaster = require('./Broadcaster')
 const Post = require('./Post')
-const OLD_POSTS_TIME = 1000 * 60 * 60 * 5 // 5h
+const OLD_POSTS_TIME = 1000 * 60 * 60 * 5 * 5 * 30// 5h
 
 module.exports = async (bot, vk, db) => {
     const allSourcesObj = db.getAllSourcesObj()
     const allSourcesArr = db.getAllSourcesArr()
+    if (!allSourcesArr.length) {
+        return []
+    }
     const sourcesQueries = formatSourcesQueries(allSourcesArr)
     const executeRequestQueries = prepareExecuteRequests(sourcesQueries, vk.execute)
     let executeResponses = []
@@ -130,7 +133,8 @@ async function sendPost(bot, receiverId, post) {
             type: 'photo',
             media,
         }))
-        mediaGroupItems[0].caption = post.getText()
+        // TODO: view full long text if longer than 1024
+        mediaGroupItems[0].caption = post.asText()
         await bot.sendMediaGroup(
             receiverId,
             mediaGroupItems

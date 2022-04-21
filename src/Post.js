@@ -1,5 +1,6 @@
 const dayjs = require('dayjs')
 const Comment = require('./Comment')
+const MAX_IMAGE_CAPTION_LENGTH = 800
 
 module.exports = class Post {
     constructor(
@@ -22,12 +23,21 @@ module.exports = class Post {
         this.pinned = pinned
     }
 
-    getText() {
+    asText(full = false) {
         return ''
             + `[ <code>${this.name}</code> ] @ <i>${dateFormatter(this.date)}</i>`
-            + `\n${this.text}`
+            + `\n${this.getText()}`
             + this.getAttachmentsText()
             + this.getCommentsLink()
+    }
+
+    getText(full = false) {
+        // TODO: repost parse
+        return full 
+            // TODO: add url to full text
+            ? this.text
+            : this.text.substr(0, MAX_IMAGE_CAPTION_LENGTH) + '...'
+
     }
 
     getCommentsLink() {
@@ -64,9 +74,11 @@ module.exports = class Post {
     }
 
     getPhotos() {
-        return this.atts
-            .filter(att => att.type === 'photo')
-            .map(att => att.photo.sizes[att.photo.sizes.length - 1].url)
+        return this.atts 
+            ? this.atts
+                .filter(att => att.type === 'photo')
+                .map(att => att.photo.sizes[att.photo.sizes.length - 1].url)
+            : []
     }
 }
 
