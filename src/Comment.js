@@ -6,6 +6,7 @@ const BORDERS = {
 }
 const MAX_COMMENT_TEXT_LENGTH = 500
 const MAX_NAME_LENGTH = 20
+const REF_REGEX = new RegExp(/\[(id(.*)|club(.*))\|(.*?)\]/)
 
 module.exports = class Comment {
     constructor(
@@ -67,7 +68,12 @@ module.exports = class Comment {
         return name
     }
 
+    replaceTextRefs() {
+        this.text = this.text.replace(REF_REGEX, ($0, $1, $2, $3, $4) => $4)
+    }
+
     getText(singleCommentMode = false) {
+        this.replaceTextRefs()
         const textTabulated = `${this.text}`.replaceAll('\n', `\n${BORDERS.TAB}`)
         const maxCommentLength = singleCommentMode
             ? MAX_COMMENT_TEXT_LENGTH * 5
