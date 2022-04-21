@@ -79,7 +79,7 @@ module.exports = class Comment {
             ? MAX_COMMENT_TEXT_LENGTH * 5
             : MAX_COMMENT_TEXT_LENGTH
         if (textTabulated.length > maxCommentLength) {
-            this.text = this.text.substring(0, maxCommentLength) + ' ...'
+            this.text = `\n${BORDERS.TAB}` + this.text.substring(0, maxCommentLength) + ' ...'
             if (singleCommentMode) {
                 this.text += '\n<b> ⚠️ This comment is to big to be sent ⚠️</b>'
             } else {
@@ -94,7 +94,6 @@ module.exports = class Comment {
         const atts = this.getAttachmentsText()
         const threads = this.parseThreads()
         const mainContext = ''
-            + BORDERS.TAB
             // TODO: parse name inside comment text
             + this.getText(singleCommentMode)
             + atts
@@ -102,7 +101,6 @@ module.exports = class Comment {
             + (threads ? `\n${threads}` : '')
         return ''
             + topBorder
-            + `\n`
             + mainContext.replaceAll('\n', `\n${BORDERS.TAB}`)
             + `\n`
             + BORDERS.LEFT_BOT
