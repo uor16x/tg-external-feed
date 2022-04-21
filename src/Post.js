@@ -1,4 +1,5 @@
 const dayjs = require('dayjs')
+const Comment = require('./Comment')
 
 module.exports = class Post {
     constructor(
@@ -8,6 +9,7 @@ module.exports = class Post {
         text,
         atts,
         date,
+        commentsCount,
         pinned,
     ) {
         this.id = id
@@ -16,6 +18,7 @@ module.exports = class Post {
         this.text = text
         this.atts = atts
         this.date = date
+        this.commentsCount = commentsCount
         this.pinned = pinned
     }
 
@@ -24,6 +27,13 @@ module.exports = class Post {
             + `[ <code>${this.name}</code> ] @ <i>${dateFormatter(this.date)}</i>`
             + `\n${this.text}`
             + this.getAttachmentsText()
+            + this.getCommentsLink()
+    }
+
+    getCommentsLink() {
+        return this.commentsCount
+            ? `\n<a href="${Comment.getCommentLink(this.srcId, this.id)}">Comments [${this.commentsCount}]</a>`
+            : ''
     }
 
     getAttachmentsText() {

@@ -47,7 +47,10 @@ module.exports = class Comment {
         commentId,
         count
     ) {
-        let link = `https://t.me/${process.env.COMMENTS_BOT_ALIAS}?start=${ownerId}_${postId}`
+        const owner = +ownerId > 0
+            ? `-${ownerId}`
+            : ownerId
+        let link = `https://t.me/${process.env.COMMENTS_BOT_ALIAS}?start=${owner}_${postId}`
         if (offset !== undefined) {
             link += `_${offset}`
         }
@@ -99,7 +102,7 @@ module.exports = class Comment {
         const mainContext = ''
             + this.getText(singleCommentMode)
             + atts
-            + (this.likes ? `\n♡ ${this.likes}` : '')
+            + (this.likes ? `\n💙 ${this.likes}` : '')
             + (threads ? `\n${threads}` : '')
         return ''
             + topBorder

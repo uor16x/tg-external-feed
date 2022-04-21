@@ -22,10 +22,10 @@ class Broadcaster {
                 }
             }
             const data = await dataFetch() // fetching data for next iteration
-            this.lastBroadcastTime = null // nullify last broadcast date so it could be set while broadcasting
+            this.lastBroadcastTime = Date.now() // nullify last broadcast date so it could be set while broadcasting
             return this.broadcast(data, dataFetch)
         }
-        if (!this.lastBroadcastTime) this.lastBroadcastTime = Date.now() // all checks passed, start broadcast loop
+        this.lastBroadcastTime = Date.now() // all checks passed, start broadcast loop
         const currentChunk = queue
             .filter(request => this.isReadyToBeSent(request.receiver)) // get only requests, which could be executed
             .splice(0, this.REQUESTS_PER_SECOND) // get first N which would be executed in current second

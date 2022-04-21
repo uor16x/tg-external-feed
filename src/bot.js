@@ -169,7 +169,7 @@ module.exports = function({ db, vk }) {
         bot =_bot
         require('./commentsBot')(vk)
 
-        // Broadcaster.broadcast(null, () => feed(bot, vk, db))
+        Broadcaster.broadcast(null, () => feed(bot, vk, db))
     }
     return bot
 }

@@ -1,5 +1,6 @@
 const Broadcaster = require('./Broadcaster')
 const Post = require('./Post')
+const OLD_POSTS_TIME = 1000 * 60 * 60 * 5 // 5h
 
 module.exports = async (bot, vk, db) => {
     const allSourcesObj = db.getAllSourcesObj()
@@ -14,7 +15,7 @@ module.exports = async (bot, vk, db) => {
         console.error(err)
     }
     const walls = mergeExecuteResults(executeResponses, allSourcesArr)
-    const fromTime = Broadcaster.lastBroadcastTime || Date.now() - 1000 * 60 * 60 * 128
+    const fromTime = Broadcaster.lastBroadcastTime || Date.now() - OLD_POSTS_TIME
     const posts = formatListFromWalls(walls, fromTime)
     const messages = mergePostsWithReceivers(bot, posts, allSourcesObj)
     console.log(`Formed ${messages.length} messages`)
@@ -77,12 +78,13 @@ function formatListFromWalls(walls, afterDate) {
             post.text,
             post.attachments,
             post.date * 1000,
+            post.comments.count,
             post.is_pinned
         )))
         return acc
     }, [])
     .filter(post => !post.pinned)
-    // .filter(post => post.date > afterDate)
+    .filter(post => post.date > afterDate)
     .sort((postA, postB) => postB.date - postA.date)
 }
 
@@ -121,23 +123,23 @@ async function sendPost(bot, receiverId, post) {
     Broadcaster.receiversLastRequestTime[receiverId] = Date.now()
     console.log(`R ${new Date().toLocaleTimeString()}: ${receiverId} <= ${post.id}`)
     
-    // const photos = post.getPhotos()
-    // if (photos.length) {
-    //     const mediaGroupItems = photos.map(media => ({
-    //         parse_mode: 'HTML',
-    //         type: 'photo',
-    //         media,
-    //     }))
-    //     mediaGroupItems[0].caption = post.getText()
-    //     await bot.sendMediaGroup(
-    //         receiverId,
-    //         mediaGroupItems
-    //     )
-    // } else {
-    //     return bot.sendMessage(
-    //         receiverId,
-    //         post.getText(),
-    //         { parse_mode: 'HTML' }
-    //     )
-    // }
+    const photos = post.getPhotos()
+    if (photos.length) {
+        const mediaGroupItems = photos.map(media => ({
+            parse_mode: 'HTML',
+            type: 'photo',
+            media,
+        }))
+        mediaGroupItems[0].caption = post.getText()
+        await bot.sendMediaGroup(
+            receiverId,
+            mediaGroupItems
+        )
+    } else {
+        return bot.sendMessage(
+            receiverId,
+            post.getText(),
+            { parse_mode: 'HTML' }
+        )
+    }
 }

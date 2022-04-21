@@ -76,6 +76,7 @@ const methods = {
             offset,
             comment_id,
             extended: true,
+            need_likes: true,
             count
         }
         if (+count === 1 && comment_id !== undefined) {
