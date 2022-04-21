@@ -91,13 +91,13 @@ module.exports = class Comment {
 
     asText(singleCommentMode = false) {
         const topBorder = `${BORDERS.LEFT_TOP}<code>${this.getName()}</code>${BORDERS.RIGHT_TOP}`
-        const atts = this.parseAtts()
+        const atts = this.getAttachmentsText()
         const threads = this.parseThreads()
         const mainContext = ''
             + BORDERS.TAB
             // TODO: parse name inside comment text
             + this.getText(singleCommentMode)
-            + (atts ? `\n${atts}` : '')
+            + atts
             + (this.likes ? `\n♡ ${this.likes}` : '')
             + (threads ? `\n${threads}` : '')
         return ''
@@ -114,11 +114,41 @@ module.exports = class Comment {
             : ''
     }
 
-    parseAtts() {
+    static getPhotoUrl(att) {
+        return att
+            && att.photo
+            && att.photo.sizes
+            && att.photo.sizes.length
+            && att.photo.sizes[att.photo.sizes.length - 1]
+            && att.photo.sizes[att.photo.sizes.length - 1].url
+    }
+
+    getAttachmentsText() {
         if (!this.atts) {
             return ''
         }
-        // TODO: parse atts
-        return `<b>Attachments</b> [${this.atts.length}]`
+        return this.atts
+            .reduce((acc, att) => {
+                switch (att.type) {
+                    case 'photo':
+                        acc += `\n<a href="${Comment.getPhotoUrl(att)}">Photo</a>`
+                        break
+                    case 'video':
+                        acc += `\n<b>Video: </b> ${att.video.title}`
+                        break
+                    case 'link':
+                        acc += '\n<b>Link: </b> \n'
+                            + `<a href="${att.link.url}">${att.link.caption}</a>`
+                        break
+                    case 'audio':
+                        acc += `\n<b>Audio: </b> ${att.audio.artist} - ${att.audio.title}`
+                        break
+                    case 'file':
+                        acc += `\n<b>File: </b> ${att.file.title}`
+                    default:
+                        acc =+ `\nUnsupported attachment: ${att.type}`
+                }
+                return acc
+            }, '')
     }
 }
