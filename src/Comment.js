@@ -1,12 +1,6 @@
-const BORDERS = {
-    LEFT_TOP: '╔═◤ ',
-    LEFT_BOT: '╚══════',
-    RIGHT_TOP: ' ◥═╗',
-    TAB: '│\t\t'
-}
+const text = require('./text')
 const MAX_COMMENT_TEXT_LENGTH = 500
 const MAX_NAME_LENGTH = 20
-const REF_REGEX = new RegExp(/\[(id(.*)|club(.*))\|(.*?)\]/)
 
 module.exports = class Comment {
     constructor(
@@ -72,7 +66,7 @@ module.exports = class Comment {
     }
 
     replaceTextRefs() {
-        this.text = this.text.replace(REF_REGEX, ($0, $1, $2, $3, $4) => $4)
+        this.text = this.text.replace(text.REGEX.COMMENT_REFERENCE(), ($0, $1, $2, $3, $4) => $4)
     }
 
     getText(singleCommentMode = false) {
@@ -80,13 +74,21 @@ module.exports = class Comment {
         const maxCommentLength = singleCommentMode
             ? MAX_COMMENT_TEXT_LENGTH * 5
             : MAX_COMMENT_TEXT_LENGTH
-        const textTabulated = `${this.text}`.replaceAll('\n', `\n${BORDERS.TAB}`)
+        const textTabulated = `${this.text}`.replaceAll('\n', `\n${text.COMMENT.BORDER.TAB()}`)
         if (textTabulated.length > maxCommentLength) {
             this.text = this.text.substring(0, maxCommentLength) + ' ...'
             if (singleCommentMode) {
-                this.text += '\n<b> ⚠️ This comment is to big to be sent ⚠️</b>'
+                this.text += text.COMMENT.TOO_BIG()
             } else {
-                this.text += `\n<a href="${Comment.getCommentLink(this.ownerId, this.postId, 0, this.id, 1)}">View full comment</a>`
+                this.text += text.COMMENT.VIEW_FULL(
+                    Comment.getCommentLink(
+                        this.ownerId,
+                        this.postId,
+                        0,
+                        this.id,
+                        1
+                    )
+                )
             }
         }
         if (this.text.length) {
@@ -96,7 +98,7 @@ module.exports = class Comment {
     }
 
     asText(singleCommentMode = false) {
-        const topBorder = `${BORDERS.LEFT_TOP}<code>${this.getName()}</code>${BORDERS.RIGHT_TOP}`
+        const topBorder = `${text.COMMENT.BORDER.LEFT_TOP()}<code>${this.getName()}</code>${text.COMMENT.BORDER.RIGHT_TOP()}`
         const atts = this.getAttachmentsText()
         const threads = this.parseThreads()
         const mainContext = ''
@@ -106,14 +108,22 @@ module.exports = class Comment {
             + (threads ? `\n${threads}` : '')
         return ''
             + topBorder
-            + mainContext.replaceAll('\n', `\n${BORDERS.TAB}`)
+            + mainContext.replaceAll('\n', `\n${text.COMMENT.BORDER.TAB()}`)
             + `\n`
-            + BORDERS.LEFT_BOT
+            + text.COMMENT.BORDER.LEFT_BOT()
     }
 
     parseThreads() {
         return this.threadCount
-            ? `<a href="${Comment.getCommentLink(this.ownerId, this.postId, 0, this.id)}">Thread [${this.threadCount}]</a>`
+            ? text.COMMENT.THREAD(
+                Comment.getCommentLink(
+                    this.ownerId,
+                    this.postId,
+                    0,
+                    this.id
+                ),
+                this.threadCount
+            )
             : ''
     }
 
@@ -134,22 +144,39 @@ module.exports = class Comment {
             .reduce((acc, att) => {
                 switch (att.type) {
                     case 'photo':
-                        acc += `\n<a href="${Comment.getPhotoUrl(att)}">Photo</a>`
+                        acc += text
+                            .COMMENT
+                            .ATTACHMENT
+                            .PHOTO(Comment.getPhotoUrl(att))
                         break
                     case 'video':
-                        acc += `\n<b>Video: </b> ${att.video.title}`
+                        acc += text
+                            .COMMENT
+                            .ATTACHMENT
+                            .VIDEO(att.video.title)
                         break
                     case 'link':
-                        acc += '\n<b>Link: </b> \n'
-                            + `<a href="${att.link.url}">${att.link.caption}</a>`
+                        acc += text
+                            .COMMENT
+                            .ATTACHMENT
+                            .LINK(att.link.url, att.link.caption)
                         break
                     case 'audio':
-                        acc += `\n<b>Audio: </b> ${att.audio.artist} - ${att.audio.title}`
+                        acc += text
+                            .COMMENT
+                            .ATTACHMENT
+                            .AUDIO(att.audio.artist, att.audio.title)
                         break
                     case 'file':
-                        acc += `\n<b>File: </b> ${att.file.title}`
+                        acc += text
+                            .COMMENT
+                            .ATTACHMENT
+                            .FILE(att.file.title)
                     default:
-                        acc =+ `\nUnsupported attachment: ${att.type}`
+                        acc =+ text
+                            .COMMENT
+                            .ATTACHMENT
+                            .UNSUPPORTED(att.type)
                 }
                 return acc
             }, '')
