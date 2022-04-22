@@ -1,9 +1,14 @@
 const Comment = require('./Comment')
 const { nextPage } = require('./keyboard')
+const text = require('./text')
 const COMMENTS_PER_MSG = 5
 
 module.exports = async vk => {
     const commentsBot = new (require('node-telegram-bot-api'))(process.env.COMMENTS_BOT_TOKEN, { polling: true })
+    commentsBot.onText(text.REGEX.HELP(), async msg => commentsBot.sendMessage(
+        msg.chat.id,
+        text.HELP.COMMENTS(),
+    ))
     commentsBot.onText(/start (.+)/, async (msg, match) => {
         const id = msg.chat.id
         // TODO: handle err

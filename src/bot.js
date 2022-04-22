@@ -33,14 +33,10 @@ async function sendSources(
 }
 
 const _methods = {
-    start: db => vk => bot => async msg => {
-        const id = msg.chat.id
-        // TODO: hello message with help
-        await bot.sendMessage(
-            id,
-            `Welcome, ${msg.chat.first_name}!`,
-        )
-    },
+    help: db => vk => bot => async msg => bot.sendMessage(
+        msg.chat.id,
+        text.HELP.POSTS(),
+    ),
     sources: db => vk => bot => async msg => {
         const id = msg.chat.id
         const msg_id = msg.message_id
@@ -187,9 +183,10 @@ function getConfiguredMethods(db, vk, bot, methods) {
 }
 
 function configureBot(bot, methods) {
-    bot.onText(text.REGEX.START(), methods.start)
+    bot.onText(text.REGEX.START(), methods.help)
+    bot.onText(text.REGEX.HELP(), methods.help)
     bot.onText(text.REGEX.SOURCES(), methods.sources)
-    bot.onText(text.REGEX.VK, methods.addSource)
+    bot.onText(text.REGEX.VK(), methods.addSource)
     bot.onText(text.REGEX.REQUEST_DELETE(), methods.requestSourceDelete)
     bot.on('callback_query', methods.removeSource)
 }
