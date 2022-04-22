@@ -1,6 +1,6 @@
 const Broadcaster = require('./Broadcaster')
 const Post = require('./Post')
-const OLD_POSTS_TIME = 1000 * 60 * 60 * 5 * 5 * 30// 5h
+const OLD_POSTS_TIME = 1000 * 60 * 60 * 5// 5h
 
 module.exports = async (bot, vk, db) => {
     const allSourcesObj = db.getAllSourcesObj()
