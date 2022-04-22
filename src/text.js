@@ -18,6 +18,26 @@ module.exports = {
         START: () => /\/start/,
         SOURCES: () => /\/sources/,
         REQUEST_DELETE: () => /✘ (.+)/,
-        VK: () => /(https?:\/\/(.+?\.)?vk\.com(\/[A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)/
+        VK: () => /(https?:\/\/(.+?\.)?vk\.com(\/[A-Za-z0-9\-\._~:\/\?#\[\]@!$&'\(\)\*\+,;\=]*)?)/,
+        COMMENT_REFERENCE: () => /\[(id(.*)|club(.*))\|(.*?)\]/
+    },
+    COMMENT: {
+        TOO_BIG: () => '\n<b> ⚠️ This comment is to big to be sent ⚠️</b>',
+        VIEW_FULL: link => `\n<a href="${link}">View full comment</a>`,
+        THREAD: (link, count) => `<a href="${link}">Thread [${count}]</a>`,
+        ATTACHMENT: {
+            PHOTO: link => `\n<a href="${link}">Photo</a>`,
+            VIDEO: title => `\n<b>Video: </b> ${title}`,
+            LINK: (url, caption) => `\n<b>Link: </b> \n<a href="${url}">${caption}</a>`,
+            AUDIO: (artist, title) => `\n<b>Audio: </b> ${artist} - ${title}`,
+            FILE: title => `\n<b>File: </b> ${title}`,
+            UNSUPPORTED: type => `\nUnsupported attachment: ${type}`
+        },
+        BORDER: {
+            LEFT_TOP: '╔═◤ ',
+            LEFT_BOT: '╚══════',
+            RIGHT_TOP: ' ◥═╗',
+            TAB: '│\t\t'
+        }
     }
 }
