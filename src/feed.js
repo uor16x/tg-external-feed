@@ -127,6 +127,7 @@ async function sendPost(bot, receiverId, post) {
     console.log(`R ${new Date().toLocaleTimeString()}: ${receiverId} <= ${post.id}`)
     
     const photos = post.getPhotos()
+    const text = post.asText()
     if (photos.length) {
         const mediaGroupItems = photos.map(media => ({
             parse_mode: 'HTML',
@@ -134,7 +135,7 @@ async function sendPost(bot, receiverId, post) {
             media,
         }))
         // TODO: view full long text if longer than 1024
-        mediaGroupItems[0].caption = post.asText()
+        mediaGroupItems[0].caption = text || '-'
         await bot.sendMediaGroup(
             receiverId,
             mediaGroupItems
@@ -142,7 +143,7 @@ async function sendPost(bot, receiverId, post) {
     } else {
         return bot.sendMessage(
             receiverId,
-            post.getText(),
+            text || '-',
             { parse_mode: 'HTML' }
         )
     }
