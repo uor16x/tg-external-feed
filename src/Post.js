@@ -34,9 +34,12 @@ module.exports = class Post {
     getText(full = false) {
         // TODO: repost parse
         return full 
-            // TODO: add url to full text
             ? this.text
-            : this.text.substr(0, MAX_IMAGE_CAPTION_LENGTH) + '...'
+            : (
+                this.text.length > MAX_IMAGE_CAPTION_LENGTH - 3 
+                ? this.text.substr(0, MAX_IMAGE_CAPTION_LENGTH) + '...'
+                : this.text
+            )
 
     }
 
@@ -47,6 +50,9 @@ module.exports = class Post {
     }
 
     getAttachmentsText() {
+        if (!this.atts) {
+            return ''
+        }
         return this.atts
             .filter(att => att.type !== 'photo')
             .reduce((acc, att) => {
