@@ -1,5 +1,10 @@
 require('dotenv').config()
 const src = require('./src')
+
+process.on('uncaughtException', err => {
+    console.error('Caught exception: ' + err);
+});
+
 try {
     src.initBot({ 
         db: src.db(),
