@@ -13,6 +13,7 @@ Each user could receive 20 messages per minute from the bot (~1 message in 3 sec
 In general, bot could send ~30 messages per second to different users.
 
 TBD:
+- Proper DB integration
 - Proper logging/documentation
 - Extend supported attachments list (video, stickets etc.)
 - Reposts support
